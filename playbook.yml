@@ -14,11 +14,9 @@
       prompt: "Enter new password for ansible user"
       private: yes
       confirm: yes
-    - name: chrome_remote_desktop_pin
-      prompt: "Enter PIN for Chrome Remote Desktop (6 digits, will be used for configuration reference)"
-      private: yes
-      validate: "^(?=.*[0-9])[0-9]{6}$"
-      invalid_message: "PIN must be exactly 6 digits"
+    - name: swbf2_server_folder_name
+      prompt: "Enter folder name for SWBF2 server (will be extracted to Desktop)"
+      private: no
   
   roles:
     - swbf2_server

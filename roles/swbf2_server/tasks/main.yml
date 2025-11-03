@@ -9,38 +9,55 @@
     password_never_expires: no
     state: present
   no_log: true  # Prevent password from appearing in logs
-  # Note: This task requires administrator privileges on the Windows host
+  register: res
 
-- name: Configure AutoLogon for ansible user
-  ansible.builtin.import_tasks: configure_autologon.yml
+- name: Update connection password variables for subsequent tasks
+  ansible.builtin.set_fact:
+    ansible_password: "{{ ansible_user_new_password }}"
+    ansible_winrm_pass: "{{ ansible_user_new_password }}"
+  when: res.changed
+  no_log: true
 
-- name: Get current computer name
-  ansible.windows.win_hostname:
-  register: current_hostname
+- name: Reset connection to use new password
+  ansible.builtin.meta: reset_connection
 
 - name: Change computer name to match inventory hostname
   ansible.windows.win_hostname:
     name: "{{ inventory_hostname }}"
-  when: current_hostname.name | upper != inventory_hostname | upper
-  notify: reboot_hostname
+  register: res
 
-- name: Install Google Chrome
-  ansible.builtin.import_tasks: install_chrome.yml
-
-- name: Install and configure Chrome Remote Desktop
-  ansible.builtin.import_tasks: install_chrome_remote_desktop.yml
+- name: Reboot if hostname changed
+  ansible.windows.win_reboot:
+  when: res.reboot_required
 
 - name: Configure system settings (RDP, Performance, DEP)
   ansible.builtin.import_tasks: configure_system_settings.yml
 
-- name: Install dependencies
-  ansible.builtin.import_tasks: install_dependencies.yml
+- name: Configure AutoLogon for ansible user
+  ansible.builtin.import_tasks: configure_autologon.yml
+
+- name: Install VirtIO drivers
+  ansible.builtin.import_tasks: install_virtio.yml
 
 - name: Install Visual C++ Redistributables
   ansible.builtin.import_tasks: install_vcredist.yml
 
-- name: Install .NET 8.0 Windows Server Hosting Bundle
-  ansible.builtin.import_tasks: install_dotnet.yml
+- name: Install Dependencies
+  ansible.builtin.import_tasks: install_dependencies.yml
 
-- name: Install VirtIO drivers
-  ansible.builtin.import_tasks: install_virtio.yml
+- name: Download and extract SWBF2 server
+  ansible.builtin.import_tasks: download_swbf2_server.yml
+
+- name: Configure SWBF2 server
+  ansible.builtin.import_tasks: configure_swbf2_server.yml
+
+- name: Configure Firewall rules
+  ansible.builtin.import_tasks: configure_firewall.yml
+
+- name: Display manual tasks reminder
+  ansible.builtin.import_tasks: manual_tasks_reminder.yml
+
+- name: Install all updates and reboot as many times as needed
+  ansible.windows.win_updates:
+    category_names: '*'
+    reboot: true

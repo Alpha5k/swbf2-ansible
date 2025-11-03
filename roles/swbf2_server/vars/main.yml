@@ -3,3 +3,5 @@
 # Variables for Star Wars Battlefront 2 game server deployment
 # Variables defined here have higher precedence than defaults
 
+_virtio_iso_url: https://fedorapeople.org/groups/virt/virtio-win/direct-downloads/latest-virtio/virtio-win.iso
+virtio_iso_dest: '{{ ansible_env.TEMP }}\virtio-win.iso'

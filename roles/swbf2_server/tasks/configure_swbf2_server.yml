@@ -1,0 +1,42 @@
+---
+# tasks file for configuring SWBF2 server
+
+- name: Update WebAdminPrefix in core.xml
+  community.windows.win_xml:
+    path: "{{ swbf2_server_path }}\\cfg\\core.xml"
+    xpath: "//*[local-name()='CoreConfiguration']/*[local-name()='WebAdminPrefix']"
+    fragment: "http://{{ ansible_host }}:8080/"
+    type: text
+    state: present
+
+- name: Update MySQLDatabaseName in core.xml
+  community.windows.win_xml:
+    path: "{{ swbf2_server_path }}\\cfg\\core.xml"
+    xpath: "//*[local-name()='CoreConfiguration']/*[local-name()='MySQLDatabaseName']"
+    fragment: "{{ swbf2_mysql_database_name }}"
+    type: text
+    state: present
+
+- name: Update MySQLUsername in core.xml
+  community.windows.win_xml:
+    path: "{{ swbf2_server_path }}\\cfg\\core.xml"
+    xpath: "//*[local-name()='CoreConfiguration']/*[local-name()='MySQLUsername']"
+    fragment: "{{ swbf2_mysql_username }}"
+    type: text
+    state: present
+
+- name: Update MySQLPassword in core.xml
+  community.windows.win_xml:
+    path: "{{ swbf2_server_path }}\\cfg\\core.xml"
+    xpath: "//*[local-name()='CoreConfiguration']/*[local-name()='MySQLPassword']"
+    fragment: "{{ swbf2_mysql_password }}"
+    type: text
+    state: present
+  no_log: true
+
+- name: Create shortcut to SWBF2Admin.exe in startup folder
+  community.windows.win_shortcut:
+    src: "{{ swbf2_server_path }}\\SWBF2Admin.exe"
+    dest: "{{ ansible_env['APPDATA'] }}\\Microsoft\\Windows\\Start Menu\\Programs\\Startup\\{{ swbf2_server_folder_name }}.lnk"
+    state: present
+

@@ -1,0 +1,17 @@
+---
+# tasks file for displaying manual tasks reminder
+- name: Display manual tasks that need to be completed
+  ansible.builtin.debug:
+    msg:
+      - "=========================================="
+      - "MANUAL TASKS STILL NEEDED:"
+      - "=========================================="
+      - ""
+      - "1. Activate Windows (Massgrave)"
+      - "2. Configure Google Chrome Remote Desktop"
+      - "3. Verify Performance Settings"
+      - "4. Login to GOG Galaxy"
+      - "5. Install SWBF2 in GOG Galaxy"
+      - ""
+      - "=========================================="
+

@@ -1,0 +1,46 @@
+---
+# tasks file for downloading and extracting SWBF2 server zip
+- name: Get servers path
+  ansible.builtin.set_fact:
+    servers_path: "{{ ansible_env['USERPROFILE'] }}\\Desktop\\Servers"
+
+- name: Store full path to SWBF2 server folder
+  ansible.builtin.set_fact:
+    swbf2_server_path: "{{ servers_path }}\\{{ swbf2_server_folder_name }}"
+
+- name: Check if SWBF2 server path already exists
+  ansible.windows.win_stat:
+    path: "{{ swbf2_server_path }}"
+  register: swbf2_server_path_stat
+
+- name: Download and extract SWBF2 server
+  block:
+    - name: Create temp directory for SWBF2 server zip
+      ansible.windows.win_tempfile:
+        state: directory
+        suffix: swbf2
+      register: swbf2_temp_dir
+
+    - name: Download SWBF2 server zip
+      ansible.windows.win_get_url:
+        url: "{{ swbf2_server_zip_url }}"
+        dest: "{{ swbf2_temp_dir.path }}\\SWBF2Admin.zip"
+        force: false
+
+    - name: Ensure destination directory exists
+      ansible.windows.win_file:
+        path: "{{ servers_path }}"
+        state: directory
+
+    - name: Extract SWBF2 server zip to desktop
+      community.windows.win_unzip:
+        src: "{{ swbf2_temp_dir.path }}\\SWBF2Admin.zip"
+        dest: "{{ swbf2_server_path }}"
+        creates: "{{ swbf2_server_path }}"
+
+    - name: Clean up temp directory
+      ansible.windows.win_file:
+        path: "{{ swbf2_temp_dir.path }}"
+        state: absent
+      when: swbf2_temp_dir.path is defined
+  when: not swbf2_server_path_stat.stat.exists

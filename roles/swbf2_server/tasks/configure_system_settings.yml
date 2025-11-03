@@ -1,41 +1,14 @@
 ---
 # tasks file for configuring system settings (RDP, Performance, DEP)
-- name: Check current RDP status
-  ansible.windows.win_registry:
+- name: Enable Remote Desktop via registry
+  ansible.windows.win_regedit:
     path: HKLM:\SYSTEM\CurrentControlSet\Control\Terminal Server
     name: fDenyTSConnections
-    state: present
-  register: rdp_status_check
-  failed_when: false
-
-- name: Get current RDP registry value
-  ansible.windows.win_shell: |
-    $value = Get-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Control\Terminal Server" -Name "fDenyTSConnections" -ErrorAction SilentlyContinue
-    if ($null -eq $value) {
-      Write-Output "1"
-    } else {
-      Write-Output $value.fDenyTSConnections
-    }
-  register: rdp_current_value
-  changed_when: false
-
-- name: Disable Remote Desktop via registry
-  ansible.windows.win_registry:
-    path: HKLM:\SYSTEM\CurrentControlSet\Control\Terminal Server
-    name: fDenyTSConnections
-    data: 1
+    data: 0
     type: dword
-  when: rdp_current_value.stdout != "1"
-
-- name: Disable Remote Desktop service
-  ansible.windows.win_service:
-    name: TermService
-    state: stopped
-    start_mode: disabled
-  register: rdp_service_stop
 
 - name: Set performance to "Adjust for best performance" for current user
-  ansible.windows.win_registry:
+  ansible.windows.win_regedit:
     path: HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\VisualEffects
     name: VisualFXSetting
     data: 2
@@ -44,62 +17,31 @@
   # 0 = Let Windows choose, 1 = Adjust for best appearance, 2 = Adjust for best performance, 3 = Custom
 
 - name: Set performance to "Adjust for best performance" for default user profile
-  ansible.windows.win_shell: |
-    $regPath = "HKU:\.DEFAULT\Software\Microsoft\Windows\CurrentVersion\Explorer\VisualEffects"
-    if (-not (Test-Path $regPath)) {
-      New-Item -Path $regPath -Force | Out-Null
-    }
-    Set-ItemProperty -Path $regPath -Name "VisualFXSetting" -Value 2 -Type DWord -Force
-  register: default_user_perf
+  ansible.windows.win_regedit:
+    path: HKU:\.DEFAULT\Software\Microsoft\Windows\CurrentVersion\Explorer\VisualEffects
+    name: VisualFXSetting
+    data: 2
+    type: dword
 
 - name: Disable window animations for best performance
-  ansible.windows.win_registry:
+  ansible.windows.win_regedit:
     path: HKCU:\Control Panel\Desktop\WindowMetrics
     name: MinAnimate
     data: "0"
     type: string
 
-- name: Check current processor scheduling setting
-  ansible.windows.win_shell: |
-    $value = Get-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Control\PriorityControl" -Name "Win32PrioritySeparation" -ErrorAction SilentlyContinue
-    if ($null -eq $value) {
-      Write-Output "not_set"
-    } else {
-      Write-Output $value.Win32PrioritySeparation
-    }
-  register: current_proc_scheduling
-  changed_when: false
+- name: Smooth edges of screen fonts
+  ansible.windows.win_regedit:
+    path: HKCU:\Control Panel\Desktop
+    name: FontSmoothing
+    data: "2"
+    type: string
 
 - name: Set processor scheduling to "Adjust for best performance of programs"
-  ansible.windows.win_registry:
+  ansible.windows.win_regedit:
     path: HKLM:\SYSTEM\CurrentControlSet\Control\PriorityControl
     name: Win32PrioritySeparation
-    data: 2
+    data: 0x28
     type: dword
-  when: current_proc_scheduling.stdout != "2"
   # Value 2 = "Adjust for best performance of programs"
   # Value 24 or 26 = "Adjust for best performance of background services"
-
-- name: Check current DEP setting
-  ansible.windows.win_shell: |
-    $value = Get-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Control\Session Manager\Memory Management" -Name "ExecuteOptions" -ErrorAction SilentlyContinue
-    if ($null -eq $value) {
-      Write-Output "not_set"
-    } else {
-      Write-Output $value.ExecuteOptions
-    }
-  register: current_dep_setting
-  changed_when: false
-
-- name: Set DEP to "Turn on DEP for essential Windows programs and services only"
-  ansible.windows.win_registry:
-    path: HKLM:\SYSTEM\CurrentControlSet\Control\Session Manager\Memory Management
-    name: ExecuteOptions
-    data: 1
-    type: dword
-  when: current_dep_setting.stdout != "1"
-  # Value 0 = DEP disabled
-  # Value 1 = DEP for essential Windows programs and services only (OptIn) - DESIRED
-  # Value 2 = DEP for all programs and services (OptOut)
-  # Value 3 = DEP always on
-

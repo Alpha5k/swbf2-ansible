@@ -1,0 +1,60 @@
+---
+# tasks file for configuring Windows Firewall rules for SWBF2 server
+- name: Allow all traffic for BattlefrontII.exe
+  community.windows.win_firewall_rule:
+    name: "{{ swbf2_server_folder_name }}"
+    display_name: "{{ swbf2_server_folder_name }}"
+    direction: in
+    action: allow
+    program: "{{ swbf2_server_path }}\\server\\BattlefrontII.exe"
+    enable: yes
+    state: present
+    profiles:
+      - domain
+      - private
+      - public
+
+- name: Allow all traffic for GalaxyCommunication.exe
+  community.windows.win_firewall_rule:
+    name: GalaxyCommunication
+    display_name: GalaxyCommunication
+    direction: in
+    action: allow
+    program: C:\ProgramData\GOG.com\Galaxy\redists\GalaxyCommunication.exe
+    enable: yes
+    state: present
+    profiles:
+      - domain
+      - private
+      - public
+
+- name: Allow ICMP ping requests
+  community.windows.win_firewall_rule:
+    name: Allow Ping
+    display_name: Allow Ping
+    direction: in
+    action: allow
+    protocol: icmpv4
+    icmp_types: 8
+    enable: yes
+    state: present
+    profiles:
+      - domain
+      - private
+      - public
+
+- name: Allow WebAdmin TCP ports
+  community.windows.win_firewall_rule:
+    name: WebAdmin
+    display_name: WebAdmin
+    direction: in
+    action: allow
+    protocol: tcp
+    local_port: 8080-8081
+    enable: yes
+    state: present
+    profiles:
+      - domain
+      - private
+      - public
+

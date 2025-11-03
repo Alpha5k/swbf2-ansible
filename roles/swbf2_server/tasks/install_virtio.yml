@@ -1,55 +1,33 @@
 ---
 # tasks file for installing VirtIO drivers
-- name: Create temp directory for VirtIO driver installer
-  ansible.windows.win_tempfile:
-    state: directory
-    suffix: virtio_installer
-  register: virtio_temp_dir
-
-- name: Download latest VirtIO drivers ISO
+- name: Windows | Download Virtio ISO
   ansible.windows.win_get_url:
-    url: "https://fedorapeople.org/groups/virt/virtio-win/direct-downloads/stable-virtio/virtio-win.iso"
-    dest: "{{ virtio_temp_dir.path }}\\virtio-win.iso"
-    timeout: 300
+    url: '{{ virtio_iso_url }}'
+    dest: "{{ virtio_iso_dest }}"
+    force: "{{ virtio_update }}"
+    follow_redirects: all
 
-- name: Mount VirtIO ISO and get drive letter
-  ansible.windows.win_shell: |
-    $isoPath = "{{ virtio_temp_dir.path }}\\virtio-win.iso"
-    $mountResult = Mount-DiskImage -ImagePath $isoPath -StorageType ISO -PassThru
-    $driveLetter = ($mountResult | Get-Volume).DriveLetter
-    Write-Output "$driveLetter"
-  register: virtio_drive_letter
-  changed_when: true
-
-- name: Determine system architecture
-  ansible.windows.win_shell: |
-    if ([Environment]::Is64BitOperatingSystem) {
-      Write-Output "x64"
-    } else {
-      Write-Output "x32"
-    }
-  register: system_arch
-  changed_when: false
-  when: virtio_drive_letter.stdout is defined
-
-- name: Install VirtIO guest tools using MSI
-  ansible.windows.win_package:
-    path: "{{ virtio_drive_letter.stdout }}:\\virtio-win-gt-{{ system_arch.stdout }}.msi"
+- name: Windows | Mount Virtio ISO
+  community.windows.win_disk_image:
+    image_path: "{{ virtio_iso_dest }}"
     state: present
-    arguments: "/qn ADDLOCAL=ALL /norestart"
-  when: virtio_drive_letter.stdout is defined
-  register: virtio_install
+  register: disk_image_out
+  changed_when: false
 
-- name: Dismount VirtIO ISO
-  ansible.windows.win_shell: |
-    $isoPath = "{{ virtio_temp_dir.path }}\\virtio-win.iso"
-    Dismount-DiskImage -ImagePath $isoPath -ErrorAction SilentlyContinue
-  when: virtio_drive_letter.stdout is defined
-  ignore_errors: yes
+- name: Windows | Install Virtio
+  ansible.windows.win_package:
+    path: '{{ disk_image_out.mount_paths[0] }}virtio-win-gt-x64.msi'
+    state: present
 
-- name: Clean up VirtIO installer files
-  ansible.windows.win_file:
-    path: "{{ virtio_temp_dir.path }}"
+- name: Windows | Install Qemu Guest Agent and Spice agent
+  ansible.windows.win_package:
+    path: '{{ disk_image_out.mount_paths[0] }}virtio-win-guest-tools.exe'
+    arguments: /install /passive /norestart
+    creates_path: "{{ ansible_env['ProgramFiles'] }}\\qemu-ga"
+    state: present
+
+- name: Windows | Unmount virtio-win.iso
+  community.windows.win_disk_image:
+    image_path: "{{ virtio_iso_dest }}"
     state: absent
-  when: virtio_temp_dir.path is defined
-  ignore_errors: yes
+  changed_when: false
