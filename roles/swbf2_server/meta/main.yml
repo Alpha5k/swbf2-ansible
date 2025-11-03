@@ -1,0 +1,23 @@
+---
+galaxy_info:
+  role_name: swbf2_server
+  namespace: custom
+  author: Your Name
+  description: Ansible role to deploy Star Wars Battlefront 2 game server on Windows VPS
+  license: MIT
+  min_ansible_version: "2.9"
+  platforms:
+    - name: Windows
+      versions:
+        - "2019"
+        - "2022"
+        - "2025"
+  galaxy_tags:
+    - windows
+    - gaming
+    - swbf2
+    - game-server
+    - star-wars-battlefront-2
+
+dependencies: []
+

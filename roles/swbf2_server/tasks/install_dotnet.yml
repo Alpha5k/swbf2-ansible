@@ -1,0 +1,49 @@
+---
+# tasks file for installing .NET 8.0 Windows Server Hosting Bundle
+- name: Check if .NET 8.0 Hosting Bundle is installed
+  ansible.windows.win_registry:
+    path: HKLM:\SOFTWARE\dotnet\Setup\InstalledVersions\x64\sharedhost
+    name: Version
+  register: dotnet8_hosting
+  failed_when: false
+  changed_when: false
+
+- name: Check .NET 8.0 installation via registry
+  ansible.windows.win_shell: |
+    $dotnet8Path = "HKLM:\SOFTWARE\WOW6432Node\dotnet\Setup\InstalledVersions\x64\sharedhost"
+    $version = Get-ItemProperty -Path $dotnet8Path -Name "Version" -ErrorAction SilentlyContinue
+    if ($version -and $version.Version -like "8.*") {
+      Write-Output "installed"
+    } else {
+      Write-Output "not_installed"
+    }
+  register: dotnet8_check
+  changed_when: false
+
+- name: Create temp directory for .NET 8.0 Hosting Bundle installer
+  ansible.windows.win_tempfile:
+    state: directory
+    suffix: dotnet8_installer
+  register: dotnet8_temp_dir
+  when: dotnet8_check.stdout != "installed"
+
+- name: Download .NET 8.0 Windows Server Hosting Bundle
+  ansible.windows.win_get_url:
+    url: "https://builds.dotnet.microsoft.com/dotnet/aspnetcore/Runtime/8.0.21/dotnet-hosting-8.0.21-win.exe"
+    dest: "{{ dotnet8_temp_dir.path }}\\dotnet-hosting-8.0.21-win.exe"
+  when: dotnet8_check.stdout != "installed"
+
+- name: Install .NET 8.0 Windows Server Hosting Bundle silently
+  ansible.windows.win_package:
+    path: "{{ dotnet8_temp_dir.path }}\\dotnet-hosting-8.0.21-win.exe"
+    state: present
+    arguments: "/install /quiet /norestart"
+  when: dotnet8_check.stdout != "installed"
+  register: dotnet8_install
+
+- name: Clean up .NET 8.0 Hosting Bundle installer
+  ansible.windows.win_file:
+    path: "{{ dotnet8_temp_dir.path }}"
+    state: absent
+  when: dotnet8_check.stdout != "installed"
+

@@ -1,0 +1,47 @@
+---
+# tasks file for configuring AutoLogon using SysInternals AutoLogon tool
+- name: Create temp directory for SysInternals AutoLogon tool
+  ansible.windows.win_tempfile:
+    state: directory
+    suffix: autologon
+  register: autologon_temp_dir
+
+- name: Download SysInternals AutoLogon tool
+  ansible.windows.win_get_url:
+    url: "https://live.sysinternals.com/Autologon.exe"
+    dest: "{{ autologon_temp_dir.path }}\\Autologon.exe"
+
+- name: Enable AutoLogon for ansible user using SysInternals AutoLogon tool
+  ansible.windows.win_shell: |
+    $username = "{{ ansible_user | default(ansible_user_name) }}"
+    $password = "{{ ansible_user_new_password }}"
+    $autologonExe = "{{ autologon_temp_dir.path }}\\Autologon.exe"
+    
+    # Extract username if it contains domain prefix (e.g., DOMAIN\user -> user)
+    if ($username.Contains('\')) {
+      $usernameParts = $username.Split('\')
+      $username = $usernameParts[-1]
+    }
+    
+    # AutoLogon.exe usage: Autologon.exe [username] [domain] [password]
+    # For local accounts, use "." as domain
+    $arguments = "$username . $password"
+    
+    Start-Process -FilePath $autologonExe -ArgumentList $arguments -Wait -NoNewWindow
+    $exitCode = $LASTEXITCODE
+    
+    if ($exitCode -eq 0) {
+      Write-Output "AutoLogon configured successfully for local user: $username"
+    } else {
+      Write-Error "AutoLogon configuration failed with exit code: $exitCode"
+      exit $exitCode
+    }
+  register: autologon_config
+  no_log: true  # Prevent password from appearing in logs
+  changed_when: autologon_config.rc == 0
+
+- name: Clean up AutoLogon tool
+  ansible.windows.win_file:
+    path: "{{ autologon_temp_dir.path }}"
+    state: absent
+

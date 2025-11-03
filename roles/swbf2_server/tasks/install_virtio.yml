@@ -1,0 +1,55 @@
+---
+# tasks file for installing VirtIO drivers
+- name: Create temp directory for VirtIO driver installer
+  ansible.windows.win_tempfile:
+    state: directory
+    suffix: virtio_installer
+  register: virtio_temp_dir
+
+- name: Download latest VirtIO drivers ISO
+  ansible.windows.win_get_url:
+    url: "https://fedorapeople.org/groups/virt/virtio-win/direct-downloads/stable-virtio/virtio-win.iso"
+    dest: "{{ virtio_temp_dir.path }}\\virtio-win.iso"
+    timeout: 300
+
+- name: Mount VirtIO ISO and get drive letter
+  ansible.windows.win_shell: |
+    $isoPath = "{{ virtio_temp_dir.path }}\\virtio-win.iso"
+    $mountResult = Mount-DiskImage -ImagePath $isoPath -StorageType ISO -PassThru
+    $driveLetter = ($mountResult | Get-Volume).DriveLetter
+    Write-Output "$driveLetter"
+  register: virtio_drive_letter
+  changed_when: true
+
+- name: Determine system architecture
+  ansible.windows.win_shell: |
+    if ([Environment]::Is64BitOperatingSystem) {
+      Write-Output "x64"
+    } else {
+      Write-Output "x32"
+    }
+  register: system_arch
+  changed_when: false
+  when: virtio_drive_letter.stdout is defined
+
+- name: Install VirtIO guest tools using MSI
+  ansible.windows.win_package:
+    path: "{{ virtio_drive_letter.stdout }}:\\virtio-win-gt-{{ system_arch.stdout }}.msi"
+    state: present
+    arguments: "/qn ADDLOCAL=ALL /norestart"
+  when: virtio_drive_letter.stdout is defined
+  register: virtio_install
+
+- name: Dismount VirtIO ISO
+  ansible.windows.win_shell: |
+    $isoPath = "{{ virtio_temp_dir.path }}\\virtio-win.iso"
+    Dismount-DiskImage -ImagePath $isoPath -ErrorAction SilentlyContinue
+  when: virtio_drive_letter.stdout is defined
+  ignore_errors: yes
+
+- name: Clean up VirtIO installer files
+  ansible.windows.win_file:
+    path: "{{ virtio_temp_dir.path }}"
+    state: absent
+  when: virtio_temp_dir.path is defined
+  ignore_errors: yes

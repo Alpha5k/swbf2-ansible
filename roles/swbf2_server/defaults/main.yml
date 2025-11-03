@@ -1,0 +1,23 @@
+---
+# defaults file for swbf2_server
+# Default variables for Star Wars Battlefront 2 game server deployment
+
+# Server configuration
+swbf2_server_version: "latest"
+swbf2_install_path: "C:\\Games\\SWBF2"
+swbf2_server_port: 3659
+
+# Windows Server compatibility
+supported_windows_versions:
+  - "Windows Server 2019"
+  - "Windows Server 2022"
+  - "Windows Server 2025"
+
+# Service configuration
+swbf2_service_name: "SWBF2Server"
+swbf2_service_user: ""
+
+# Ansible user configuration
+# Default to 'ansible' if ansible_user is not set in inventory
+ansible_user_name: "ansible"
+

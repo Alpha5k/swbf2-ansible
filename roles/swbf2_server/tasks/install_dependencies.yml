@@ -1,0 +1,68 @@
+---
+# tasks file for installing dependencies
+- name: Check if 7-Zip is installed
+  ansible.windows.win_stat:
+    path: "C:\\Program Files\\7-Zip\\7z.exe"
+  register: sevenzip_installed
+  failed_when: false
+
+- name: Create temp directory for 7-Zip installer
+  ansible.windows.win_tempfile:
+    state: directory
+    suffix: sevenzip_installer
+  register: sevenzip_temp_dir
+  when: not sevenzip_installed.stat.exists
+
+- name: Download 7-Zip installer
+  ansible.windows.win_get_url:
+    url: "https://www.7-zip.org/a/7z2408-x64.exe"
+    dest: "{{ sevenzip_temp_dir.path }}\\7z2408-x64.exe"
+  when: not sevenzip_installed.stat.exists
+
+- name: Install 7-Zip silently
+  ansible.windows.win_package:
+    path: "{{ sevenzip_temp_dir.path }}\\7z2408-x64.exe"
+    state: present
+    arguments: "/S"
+  when: not sevenzip_installed.stat.exists
+  register: sevenzip_install
+
+- name: Clean up 7-Zip installer
+  ansible.windows.win_file:
+    path: "{{ sevenzip_temp_dir.path }}"
+    state: absent
+  when: not sevenzip_installed.stat.exists
+
+- name: Check if Notepad++ is installed
+  ansible.windows.win_stat:
+    path: "C:\\Program Files\\Notepad++\\notepad++.exe"
+  register: notepadpp_installed
+  failed_when: false
+
+- name: Create temp directory for Notepad++ installer
+  ansible.windows.win_tempfile:
+    state: directory
+    suffix: notepadpp_installer
+  register: notepadpp_temp_dir
+  when: not notepadpp_installed.stat.exists
+
+- name: Download Notepad++ installer
+  ansible.windows.win_get_url:
+    url: "https://github.com/notepad-plus-plus/notepad-plus-plus/releases/download/v8.8.7/npp.8.8.7.Installer.exe"
+    dest: "{{ notepadpp_temp_dir.path }}\\npp.8.8.7.Installer.exe"
+  when: not notepadpp_installed.stat.exists
+
+- name: Install Notepad++ silently
+  ansible.windows.win_package:
+    path: "{{ notepadpp_temp_dir.path }}\\npp.8.8.7.Installer.exe"
+    state: present
+    arguments: "/S"
+  when: not notepadpp_installed.stat.exists
+  register: notepadpp_install
+
+- name: Clean up Notepad++ installer
+  ansible.windows.win_file:
+    path: "{{ notepadpp_temp_dir.path }}"
+    state: absent
+  when: not notepadpp_installed.stat.exists
+

@@ -1,0 +1,101 @@
+---
+# tasks file for installing Visual C++ Redistributables
+- name: Create temp directory for VC++ Redistributable installers
+  ansible.windows.win_tempfile:
+    state: directory
+    suffix: vcredist_installer
+  register: vcredist_temp_dir
+
+- name: Check if Visual C++ Redistributable 2015-2022 x64 is installed
+  ansible.windows.win_registry:
+    path: HKLM:\SOFTWARE\Microsoft\VisualStudio\14.0\VC\Runtimes\x64
+    name: Version
+  register: vcredist_2022_x64
+  failed_when: false
+  changed_when: false
+
+- name: Download Visual C++ Redistributable 2015-2022 x64
+  ansible.windows.win_get_url:
+    url: "https://aka.ms/vs/17/release/vc_redist.x64.exe"
+    dest: "{{ vcredist_temp_dir.path }}\\vc_redist.x64.exe"
+  when: not vcredist_2022_x64.exists
+
+- name: Install Visual C++ Redistributable 2015-2022 x64 silently
+  ansible.windows.win_package:
+    path: "{{ vcredist_temp_dir.path }}\\vc_redist.x64.exe"
+    state: present
+    arguments: "/install /quiet /norestart"
+  when: not vcredist_2022_x64.exists
+  register: vcredist_2022_x64_install
+
+- name: Check if Visual C++ Redistributable 2015-2022 x86 is installed
+  ansible.windows.win_registry:
+    path: HKLM:\SOFTWARE\WOW6432Node\Microsoft\VisualStudio\14.0\VC\Runtimes\x86
+    name: Version
+  register: vcredist_2022_x86
+  failed_when: false
+  changed_when: false
+
+- name: Download Visual C++ Redistributable 2015-2022 x86
+  ansible.windows.win_get_url:
+    url: "https://aka.ms/vs/17/release/vc_redist.x86.exe"
+    dest: "{{ vcredist_temp_dir.path }}\\vc_redist.x86.exe"
+  when: not vcredist_2022_x86.exists
+
+- name: Install Visual C++ Redistributable 2015-2022 x86 silently
+  ansible.windows.win_package:
+    path: "{{ vcredist_temp_dir.path }}\\vc_redist.x86.exe"
+    state: present
+    arguments: "/install /quiet /norestart"
+  when: not vcredist_2022_x86.exists
+  register: vcredist_2022_x86_install
+
+- name: Check if Visual C++ Redistributable 2013 x64 is installed
+  ansible.windows.win_registry:
+    path: HKLM:\SOFTWARE\Microsoft\VisualStudio\12.0\VC\Runtimes\x64
+    name: Version
+  register: vcredist_2013_x64
+  failed_when: false
+  changed_when: false
+
+- name: Download Visual C++ Redistributable 2013 x64
+  ansible.windows.win_get_url:
+    url: "https://aka.ms/highdpimfc2013x64enu"
+    dest: "{{ vcredist_temp_dir.path }}\\vcredist_x64_2013.exe"
+  when: not vcredist_2013_x64.exists
+
+- name: Install Visual C++ Redistributable 2013 x64 silently
+  ansible.windows.win_package:
+    path: "{{ vcredist_temp_dir.path }}\\vcredist_x64_2013.exe"
+    state: present
+    arguments: "/install /quiet /norestart"
+  when: not vcredist_2013_x64.exists
+  register: vcredist_2013_x64_install
+
+- name: Check if Visual C++ Redistributable 2013 x86 is installed
+  ansible.windows.win_registry:
+    path: HKLM:\SOFTWARE\WOW6432Node\Microsoft\VisualStudio\12.0\VC\Runtimes\x86
+    name: Version
+  register: vcredist_2013_x86
+  failed_when: false
+  changed_when: false
+
+- name: Download Visual C++ Redistributable 2013 x86
+  ansible.windows.win_get_url:
+    url: "https://aka.ms/highdpimfc2013x86enu"
+    dest: "{{ vcredist_temp_dir.path }}\\vcredist_x86_2013.exe"
+  when: not vcredist_2013_x86.exists
+
+- name: Install Visual C++ Redistributable 2013 x86 silently
+  ansible.windows.win_package:
+    path: "{{ vcredist_temp_dir.path }}\\vcredist_x86_2013.exe"
+    state: present
+    arguments: "/install /quiet /norestart"
+  when: not vcredist_2013_x86.exists
+  register: vcredist_2013_x86_install
+
+- name: Clean up VC++ Redistributable installers
+  ansible.windows.win_file:
+    path: "{{ vcredist_temp_dir.path }}"
+    state: absent
+

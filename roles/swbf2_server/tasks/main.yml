@@ -1,0 +1,46 @@
+---
+# tasks file for swbf2_server
+# This file contains the main tasks for deploying Star Wars Battlefront 2 game server
+
+- name: Change ansible user password
+  ansible.windows.win_user:
+    name: "{{ ansible_user | default(ansible_user_name) }}"
+    password: "{{ ansible_user_new_password }}"
+    password_never_expires: no
+    state: present
+  no_log: true  # Prevent password from appearing in logs
+  # Note: This task requires administrator privileges on the Windows host
+
+- name: Configure AutoLogon for ansible user
+  ansible.builtin.import_tasks: configure_autologon.yml
+
+- name: Get current computer name
+  ansible.windows.win_hostname:
+  register: current_hostname
+
+- name: Change computer name to match inventory hostname
+  ansible.windows.win_hostname:
+    name: "{{ inventory_hostname }}"
+  when: current_hostname.name | upper != inventory_hostname | upper
+  notify: reboot_hostname
+
+- name: Install Google Chrome
+  ansible.builtin.import_tasks: install_chrome.yml
+
+- name: Install and configure Chrome Remote Desktop
+  ansible.builtin.import_tasks: install_chrome_remote_desktop.yml
+
+- name: Configure system settings (RDP, Performance, DEP)
+  ansible.builtin.import_tasks: configure_system_settings.yml
+
+- name: Install dependencies
+  ansible.builtin.import_tasks: install_dependencies.yml
+
+- name: Install Visual C++ Redistributables
+  ansible.builtin.import_tasks: install_vcredist.yml
+
+- name: Install .NET 8.0 Windows Server Hosting Bundle
+  ansible.builtin.import_tasks: install_dotnet.yml
+
+- name: Install VirtIO drivers
+  ansible.builtin.import_tasks: install_virtio.yml

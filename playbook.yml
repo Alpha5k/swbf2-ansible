@@ -1,0 +1,25 @@
+---
+# Main playbook for deploying SWBF2 game server
+- name: Deploy Star Wars Battlefront 2 Game Server
+  hosts: windows_game_servers
+  gather_facts: yes
+  
+  vars:
+    ansible_connection: winrm
+    ansible_winrm_transport: ntlm
+    ansible_winrm_server_cert_validation: ignore
+  
+  vars_prompt:
+    - name: ansible_user_new_password
+      prompt: "Enter new password for ansible user"
+      private: yes
+      confirm: yes
+    - name: chrome_remote_desktop_pin
+      prompt: "Enter PIN for Chrome Remote Desktop (6 digits, will be used for configuration reference)"
+      private: yes
+      validate: "^(?=.*[0-9])[0-9]{6}$"
+      invalid_message: "PIN must be exactly 6 digits"
+  
+  roles:
+    - swbf2_server
+

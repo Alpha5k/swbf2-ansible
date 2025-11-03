@@ -1,0 +1,10 @@
+---
+# handlers file for swbf2_server
+# Handlers for Star Wars Battlefront 2 game server deployment
+
+- name: reboot_hostname
+  ansible.windows.win_reboot:
+    msg: "Rebooting to apply hostname change"
+    reboot_timeout: 3600
+  # Note: Hostname changes require a reboot to take effect
+

@@ -1,0 +1,33 @@
+---
+# tasks file for installing Google Chrome
+- name: Check if Google Chrome is installed
+  ansible.windows.win_stat:
+    path: "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe"
+  register: chrome_installed
+
+- name: Create temp directory for Chrome installer
+  ansible.windows.win_tempfile:
+    state: directory
+    suffix: chrome_installer
+  register: chrome_temp_dir
+  when: not chrome_installed.stat.exists
+
+- name: Download Google Chrome installer
+  ansible.windows.win_get_url:
+    url: "https://dl.google.com/chrome/install/ChromeStandaloneSetup64.exe"
+    dest: "{{ chrome_temp_dir.path }}\\ChromeStandaloneSetup64.exe"
+  when: not chrome_installed.stat.exists
+
+- name: Install Google Chrome silently
+  ansible.windows.win_shell: |
+    $installer = "{{ chrome_temp_dir.path }}\\ChromeStandaloneSetup64.exe"
+    Start-Process -FilePath $installer -ArgumentList "/silent" -Wait -NoNewWindow
+  when: not chrome_installed.stat.exists
+  register: chrome_install
+
+- name: Clean up Chrome installer
+  ansible.windows.win_file:
+    path: "{{ chrome_temp_dir.path }}"
+    state: absent
+  when: not chrome_installed.stat.exists
+
