@@ -1,24 +1,12 @@
 ---
 # tasks file for installing Visual C++ Redistributables
-- name: Install Visual C++ Redistributable 2015-2022 x64 using Chocolatey
-  win_chocolatey:
-    name: vcredist140
-    state: latest
+- name: Install Visual C++ Redistributable 2015-2022 using Scoop
+  community.windows.win_scoop :
+    name: vcredist
+    global: true
 
-- name: Install Visual C++ Redistributable 2015-2022 x86 using Chocolatey
-  win_chocolatey:
-    name: vcredist140
-    state: latest
-    install_args: "--forcex86"
-
-- name: Install Visual C++ Redistributable 2013 x64 using Chocolatey
-  win_chocolatey:
+- name: Install Visual C++ Redistributable 2013 using Scoop
+  community.windows.win_scoop :
     name: vcredist2013
-    state: latest
-
-- name: Install Visual C++ Redistributable 2013 x86 using Chocolatey
-  win_chocolatey:
-    name: vcredist2013
-    state: latest
-    install_args: "--forcex86"
+    global: true
 

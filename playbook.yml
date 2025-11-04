@@ -8,6 +8,8 @@
     ansible_connection: winrm
     ansible_winrm_transport: ntlm
     ansible_winrm_server_cert_validation: ignore
+    ansible_winrm_read_timeout_sec: 300
+    ansible_winrm_operation_timeout_sec: 240
   
   vars_prompt:
     - name: ansible_user_new_password
@@ -15,7 +17,7 @@
       private: yes
       confirm: yes
     - name: swbf2_server_folder_name
-      prompt: "Enter folder name for SWBF2 server (will be extracted to Desktop)"
+      prompt: "Enter folder name for SWBF2 server"
       private: no
   
   roles:

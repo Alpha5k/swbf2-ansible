@@ -1,29 +1,36 @@
 ---
 # tasks file for installing VirtIO drivers
-- name: Windows | Download Virtio ISO
+- name: Check if VirtIO ISO already exists
+  ansible.windows.win_stat:
+    path: "{{ virtio_iso_dest }}"
+  register: virtio_iso_stat
+
+- name: Windows | Download VirtIO ISO
   ansible.windows.win_get_url:
     url: '{{ virtio_iso_url }}'
     dest: "{{ virtio_iso_dest }}"
     force: "{{ virtio_update }}"
     follow_redirects: all
+  when: not virtio_iso_stat.stat.exists
 
-- name: Windows | Mount Virtio ISO
+- name: Windows | Mount VirtIO ISO
   community.windows.win_disk_image:
     image_path: "{{ virtio_iso_dest }}"
     state: present
   register: disk_image_out
   changed_when: false
 
-- name: Windows | Install Virtio
+- name: Windows | Install VirtIO
   ansible.windows.win_package:
     path: '{{ disk_image_out.mount_paths[0] }}virtio-win-gt-x64.msi'
     state: present
+  retries: 3
+  delay: 10
 
-- name: Windows | Install Qemu Guest Agent and Spice agent
+- name: Windows | Install QEMU Guest Agent and Spice Agent
   ansible.windows.win_package:
     path: '{{ disk_image_out.mount_paths[0] }}virtio-win-guest-tools.exe'
     arguments: /install /passive /norestart
-    creates_path: "{{ ansible_env['ProgramFiles'] }}\\qemu-ga"
     state: present
 
 - name: Windows | Unmount virtio-win.iso

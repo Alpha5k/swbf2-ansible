@@ -1,24 +1,24 @@
 ---
 # tasks file for installing dependencies
-- name: Install Google Chrome using Chocolatey
-  win_chocolatey:
+- name: Install Google Chrome using Scoop
+  community.windows.win_scoop:
     name: googlechrome
-    state: latest
+    global: true
 
 - name: Install Chrome Remote Desktop using Chocolatey
   win_chocolatey:
     name: chrome-remote-desktop-host
     state: latest
 
-- name: Install 7-Zip using Chocolatey
-  win_chocolatey:
+- name: Install 7-Zip using Scoop
+  community.windows.win_scoop:
     name: 7zip
-    state: latest
+    global: true
 
-- name: Install Notepad++ using Chocolatey
-  win_chocolatey:
+- name: Install Notepad++ using Scoop
+  community.windows.win_scoop:
     name: notepadplusplus
-    state: latest
+    global: true
 
 - name: Install .NET 8.0 Runtime using Chocolatey
   win_chocolatey:
@@ -27,7 +27,7 @@
     - dotnet-8.0-runtime
     state: latest
 
-- name: Install GOG Galaxy using Chocolatey
-  win_chocolatey:
+- name: Install GOG Galaxy using Scoop
+  community.windows.win_scoop:
     name: goggalaxy
-    state: latest
+    global: true

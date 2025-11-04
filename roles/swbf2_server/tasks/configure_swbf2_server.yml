@@ -38,5 +38,6 @@
   community.windows.win_shortcut:
     src: "{{ swbf2_server_path }}\\SWBF2Admin.exe"
     dest: "{{ ansible_env['APPDATA'] }}\\Microsoft\\Windows\\Start Menu\\Programs\\Startup\\{{ swbf2_server_folder_name }}.lnk"
+    directory: "{{ swbf2_server_path }}"
     state: present
 
