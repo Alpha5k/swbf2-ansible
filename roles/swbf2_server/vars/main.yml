@@ -4,4 +4,4 @@
 # Variables defined here have higher precedence than defaults
 
 _virtio_iso_url: https://cloud.redhats.net/public.php/dav/files/2syM9ZbmCizenER
-virtio_iso_dest: '{{ ansible_env.TEMP }}\virtio-win.iso'
+virtio_iso_dest: "{{ ansible_env.TEMP }}\\virtio-win.iso"

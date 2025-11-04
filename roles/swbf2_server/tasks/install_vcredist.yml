@@ -1,16 +1,59 @@
 ---
 # tasks file for installing Visual C++ Redistributables
-- name: Add the extras bucket
-  community.windows.win_scoop_bucket:
-    name: extras
+- name: Download Visual C++ Redistributable 2015-2022 x64
+  ansible.windows.win_get_url:
+    url: https://aka.ms/vs/17/release/vc_redist.x64.exe
+    dest: "{{ ansible_env.TEMP }}\\vc_redist.x64.exe"
+    force: yes
 
-- name: Install Visual C++ Redistributable 2015-2022 using Scoop
-  community.windows.win_scoop:
-    name: extras/vcredist2022
-    global: true
+- name: Download Visual C++ Redistributable 2015-2022 x86
+  ansible.windows.win_get_url:
+    url: https://aka.ms/vs/17/release/vc_redist.x86.exe
+    dest: "{{ ansible_env.TEMP }}\\vc_redist.x86.exe"
+    force: yes
 
-- name: Install Visual C++ Redistributable 2013 using Scoop
-  community.windows.win_scoop:
-    name: extras/vcredist2013
-    global: true
+- name: Download Visual C++ Redistributable 2013 x64
+  ansible.windows.win_get_url:
+    url: https://aka.ms/highdpimfc2013x64enu
+    dest: "{{ ansible_env.TEMP }}\\vcredist_x64.exe"
+    force: yes
 
+- name: Download Visual C++ Redistributable 2013 x86
+  ansible.windows.win_get_url:
+    url: https://aka.ms/highdpimfc2013x86enu
+    dest: "{{ ansible_env.TEMP }}\\vcredist_x86.exe"
+    force: yes
+
+- name: Install Visual C++ Redistributable 2015-2022 x64
+  ansible.windows.win_package:
+    path: "{{ ansible_env.TEMP }}\\vc_redist.x64.exe"
+    arguments: /install /quiet /norestart
+    state: present
+
+- name: Install Visual C++ Redistributable 2015-2022 x86
+  ansible.windows.win_package:
+    path: "{{ ansible_env.TEMP }}\\vc_redist.x86.exe"
+    arguments: /install /quiet /norestart
+    state: present
+
+- name: Install Visual C++ Redistributable 2013 x64
+  ansible.windows.win_package:
+    path: "{{ ansible_env.TEMP }}\\vcredist_x64.exe"
+    arguments: /quiet /norestart
+    state: present
+
+- name: Install Visual C++ Redistributable 2013 x86
+  ansible.windows.win_package:
+    path: "{{ ansible_env.TEMP }}\\vcredist_x86.exe"
+    arguments: /quiet /norestart
+    state: present
+
+- name: Clean up downloaded Visual C++ Redistributable packages
+  ansible.windows.win_file:
+    path: "{{ item }}"
+    state: absent
+  loop:
+    - "{{ ansible_env.TEMP }}\\vc_redist.x64.exe"
+    - "{{ ansible_env.TEMP }}\\vc_redist.x86.exe"
+    - "{{ ansible_env.TEMP }}\\vcredist_x64.exe"
+    - "{{ ansible_env.TEMP }}\\vcredist_x86.exe"

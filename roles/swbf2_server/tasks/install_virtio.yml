@@ -44,5 +44,10 @@
     state: absent
   changed_when: false
 
+- name: Windows | Clean up VirtIO ISO file
+  ansible.windows.win_file:
+    path: "{{ virtio_iso_dest }}"
+    state: absent
+
 - name: Windows | Reboot host
   ansible.windows.win_reboot:

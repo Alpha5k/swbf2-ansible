@@ -30,6 +30,11 @@
   ansible.windows.win_reboot:
   when: res.reboot_required
 
+- name: Install all updates and reboot as many times as needed
+  ansible.windows.win_updates:
+    category_names: '*'
+    reboot: true
+
 - name: Configure system settings (RDP, Performance, DEP)
   ansible.builtin.import_tasks: configure_system_settings.yml
 
@@ -38,9 +43,6 @@
 
 - name: Install VirtIO drivers
   ansible.builtin.import_tasks: install_virtio.yml
-
-- name: Install Scoop package manager
-  ansible.builtin.import_tasks: install_scoop.yml
 
 - name: Install Visual C++ Redistributables
   ansible.builtin.import_tasks: install_vcredist.yml
@@ -59,9 +61,4 @@
 
 - name: Display manual tasks reminder
   ansible.builtin.import_tasks: manual_tasks_reminder.yml
-
-- name: Install all updates and reboot as many times as needed
-  ansible.windows.win_updates:
-    category_names: '*'
-    reboot: true
 

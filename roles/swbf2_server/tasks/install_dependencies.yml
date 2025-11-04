@@ -10,15 +10,15 @@
     name: chrome-remote-desktop-host
     state: latest
 
-- name: Install 7-Zip using Scoop
-  community.windows.win_scoop:
+- name: Install 7-Zip using Chocolatey
+  win_chocolatey:
     name: 7zip
-    global: true
+    state: latest
 
-- name: Install Notepad++ using Scoop
-  community.windows.win_scoop:
+- name: Install Notepad++ using Chocolatey
+  win_chocolatey:
     name: notepadplusplus
-    global: true
+    state: latest
 
 - name: Install .NET 8.0 Runtime using Chocolatey
   win_chocolatey:
@@ -27,11 +27,7 @@
     - dotnet-8.0-runtime
     state: latest
 
-- name: Add the games bucket
-  community.windows.win_scoop_bucket:
-    name: games
-
-- name: Install GOG Galaxy using Scoop
-  community.windows.win_scoop:
+- name: Install GOG Galaxy using Chocolatey
+  win_chocolatey:
     name: goggalaxy
-    global: true
+    state: latest
