@@ -39,6 +39,9 @@
 - name: Install VirtIO drivers
   ansible.builtin.import_tasks: install_virtio.yml
 
+- name: Install Scoop package manager
+  ansible.builtin.import_tasks: install_scoop.yml
+
 - name: Install Visual C++ Redistributables
   ansible.builtin.import_tasks: install_vcredist.yml
 

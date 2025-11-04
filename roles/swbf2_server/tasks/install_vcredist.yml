@@ -1,21 +1,16 @@
 ---
 # tasks file for installing Visual C++ Redistributables
-- name: Install Git using Scoop
-  community.windows.win_scoop :
-    name: git
-    global: true
-
 - name: Add the extras bucket
   community.windows.win_scoop_bucket:
     name: extras
 
 - name: Install Visual C++ Redistributable 2015-2022 using Scoop
-  community.windows.win_scoop :
+  community.windows.win_scoop:
     name: extras/vcredist2022
     global: true
 
 - name: Install Visual C++ Redistributable 2013 using Scoop
-  community.windows.win_scoop :
+  community.windows.win_scoop:
     name: extras/vcredist2013
     global: true
 

@@ -1,0 +1,14 @@
+---
+# tasks file for installing Scoop package manager
+- name: Set PowerShell execution policy
+  ansible.windows.win_powershell:
+    script: Set-ExecutionPolicy RemoteSigned -Scope LocalMachine -Force
+
+- name: Install Scoop
+  ansible.windows.win_powershell:
+    script: iex "& {$(irm get.scoop.sh)} -RunAsAdmin"
+
+- name: Install Git using Scoop
+  community.windows.win_scoop :
+    name: git
+    global: true
