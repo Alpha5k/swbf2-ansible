@@ -43,3 +43,6 @@
     image_path: "{{ virtio_iso_dest }}"
     state: absent
   changed_when: false
+
+- name: Windows | Reboot host
+  ansible.windows.win_reboot:

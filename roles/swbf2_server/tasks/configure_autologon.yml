@@ -8,14 +8,14 @@
 
 - name: Download SysInternals AutoLogon tool
   ansible.windows.win_get_url:
-    url: "https://live.sysinternals.com/Autologon.exe"
-    dest: "{{ autologon_temp_dir.path }}\\Autologon.exe"
+    url: "https://live.sysinternals.com/Autologon64.exe"
+    dest: "{{ autologon_temp_dir.path }}\\Autologon64.exe"
 
 - name: Enable AutoLogon for ansible user using SysInternals AutoLogon tool
   ansible.windows.win_shell: |
     $username = "{{ ansible_user | default(ansible_user_name) }}"
     $password = "{{ ansible_user_new_password }}"
-    $autologonExe = "{{ autologon_temp_dir.path }}\\Autologon.exe"
+    $autologonExe = "{{ autologon_temp_dir.path }}\\Autologon64.exe"
     
     # Extract username if it contains domain prefix (e.g., DOMAIN\user -> user)
     if ($username.Contains('\')) {
@@ -25,7 +25,7 @@
     
     # AutoLogon.exe usage: Autologon.exe [username] [domain] [password]
     # For local accounts, use "." as domain
-    $arguments = "$username . $password"
+    $arguments = "/AcceptEula $username . $password"
     
     Start-Process -FilePath $autologonExe -ArgumentList $arguments -Wait -NoNewWindow
     $exitCode = $LASTEXITCODE
