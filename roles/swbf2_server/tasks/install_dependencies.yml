@@ -1,9 +1,9 @@
 ---
 # tasks file for installing dependencies
-- name: Install Google Chrome using Scoop
-  community.windows.win_scoop:
+- name: Install Google Chrome using Chocolatey
+  win_chocolatey:
     name: googlechrome
-    global: true
+    state: latest
 
 - name: Install Chrome Remote Desktop using Chocolatey
   win_chocolatey:
@@ -26,6 +26,10 @@
     - dotnet-8.0-aspnetruntime
     - dotnet-8.0-runtime
     state: latest
+
+- name: Add the games bucket
+  community.windows.win_scoop_bucket:
+    name: games
 
 - name: Install GOG Galaxy using Scoop
   community.windows.win_scoop:

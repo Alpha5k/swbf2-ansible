@@ -24,8 +24,13 @@
   ansible.windows.win_package:
     path: '{{ disk_image_out.mount_paths[0] }}virtio-win-gt-x64.msi'
     state: present
-  retries: 3
-  delay: 10
+  async: 120
+  poll: 0
+
+- name: Windows | Wait for VirtIO installation to complete
+  ansible.builtin.wait_for_connection:
+    delay: 60
+    timeout: 300
 
 - name: Windows | Install QEMU Guest Agent and Spice Agent
   ansible.windows.win_package:
